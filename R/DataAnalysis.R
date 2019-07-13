@@ -1,4 +1,3 @@
-
 library(eegkitdata)
 data("eegdata")
 str(eegdata)
@@ -35,8 +34,8 @@ for(l in 1:n){
 }
 dim(x)  # 256  64 100
 
-source('C:/Users/Penny/Desktop/PFC/code/pfcge_exc.R')
-source('C:/Users/Penny/Desktop/PFC/code/pfc_ge.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfcge_exc.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfc_ge.R')
 
 # Generate gamma1 and beta1 ------------------------------------------------------------------
 covx <- matrix(rep(0, pR*pL), pR, pR)
@@ -110,6 +109,7 @@ table(qda.pred$class,qeeg$yy)
 # dimension floding PFC with general error
 
 decomp <- function(mat, orders){
+  mat <- (mat+t(mat))/2
   decomp <- eigen(mat)$vectors %*% diag((eigen(mat)$values)^(orders)) %*% t(eigen(mat)$vectors)
   return(decomp)
 }

@@ -1,8 +1,7 @@
 library(MASS)
 set.seed(2019)
 
-source('C:/Users/Penny/Desktop/PFC/code/generate_data.R')
-
+source('C:/Users/Penny/Desktop/PFC/code/R/generate_data.R')
 
 pL  <- pR <- 10
 dL  <- dR <- 2

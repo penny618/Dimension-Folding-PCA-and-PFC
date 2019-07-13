@@ -1,8 +1,8 @@
 library(MASS)
 library(compiler)
-source('C:/Users/Penny/Desktop/PFC/code/generate_data.R')
-source('C:/Users/Penny/Desktop/PFC/code/pfc_ge.R')
-source('C:/Users/Penny/Desktop/PFC/code/pfc_iso.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/generate_data.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfc_ge.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfc_iso.R')
 
 set.seed(2019)
 
@@ -72,7 +72,6 @@ dev.off()
 
 
 
-
 # Figure3 Estimation error(isotropic error)-------------------------------------------------------------
 pL  <- pR <- 10
 dL  <- dR <- 2
@@ -133,9 +132,9 @@ dev.off()
 
 
 # check(isotropic error)-------------------------------------------------------------
-source('C:/Users/Penny/Desktop/PFC/code/generate_data.R')
-source('C:/Users/Penny/Desktop/PFC/code/pfc_ge.R')
-source('C:/Users/Penny/Desktop/PFC/code/pfc_iso.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/generate_data.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfc_ge.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/pfc_iso.R')
 
 p <- c(5,10,15,20)
 dL  <- dR <- 2

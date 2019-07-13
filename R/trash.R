@@ -1,23 +1,13 @@
 setwd("C:/Users/Penny/Desktop/PFC/paper")
-
-library(jpeg)
-set.seed(123)
-img <- readJPEG("C:/Users/Penny/Desktop/PFC/paper/data/dataset-resized/dataset-resized/glass/glass21.jpg")
-#img.n <- readJPEG("C:/Users/Penny/Desktop/PFC/paper/data/dataset-resized/dataset-resized/glass/glass215.jpg",TRUE)
-class(img)
-
-imgRGB
-plot(1:2,type = 'n')
-rasterImage(img,1,1,2,2)
-dim(img)
-# 384 512   3
-# 256  64 100
 library(magick)
+
+nk <- 30
 path <- "C:/Users/Penny/Desktop/PFC/paper/data/dataset-resized/dataset-resized/"
-pathIn1 <- paste(path,"glass/glass",1:10,".jpg",sep = "")
-pathIn2 <- paste(path,"metal/metal",1:10,".jpg",sep = "")
-pathIn <- c(pathIn1, pathIn2)
-n <- length(pathIn)
+pathIn1 <- paste(path,"glass/glass",1:nk,".jpg",sep = "")
+pathIn2 <- paste(path,"metal/metal",1:nk,".jpg",sep = "")
+pathIn3 <- paste(path,"paper/paper",1:nk,".jpg",sep = "")
+pathIn <- c(pathIn1, pathIn2, pathIn3)
+n <- length(pathIn);n
 
 img <- image_read(pathIn)  # 读入图片
 gray <- image_convert(img, colorspace='gray')  # 转为灰度图
@@ -28,22 +18,27 @@ for(i in 1:10){
 }
 dim(gray_matrix)
 
-n*pL*pR
-pL <- 384
-pR <- 512
+pL <- dim(gray_matrix)[1]
+pR <- dim(gray_matrix)[2]
 dL <- dR <- 20
-rR <- rL <- 1
+rR <- rL <- 2
 #sig <- 1
 tol <- 1e-4
+n*pL*pR
 
 x <- gray_matrix
 dim(x)
+h <- n/nk  # Y has h categories
 
-y <- 10-1/2 
+y <- nk - nk/n 
 fy <- array(0, c(rL, rR, n))
 for(i in 1:n){
-  fy[,,i] <- matrix(y,1,1)
+  fy[,,i] <- diag(c(y,y^2))
 }
+
+
+
+
 
 
 # dimension folding-------------------------------------------------------------------
@@ -67,7 +62,7 @@ Mhat <- diag(abs(rnorm(pL)))
 pre <- pfcge.exc(x, fy, gamma1, beta1, omegahat, Mhat, tol)
 X11 <- pre[["X11"]]
 dim(X11)
-Y <- as.factor(c(rep("glass",10),rep("metal",10)))
+Y <- as.factor(c(rep("glass",nk),rep("metal",nk),rep('paper',nk)))
 
 # matrix straighten
 
@@ -96,6 +91,7 @@ model.pred
 
 ## pfcge.exc ############################################################################
 decomp <- function(mat, orders){
+  mat <- (mat+t(mat))/2
   decomp <- eigen(mat)$vectors %*% diag((eigen(mat)$values)^(orders)) %*% t(eigen(mat)$vectors)
   return(decomp)
 }

@@ -1,6 +1,7 @@
 # when npL*nPL or npR*npR are very large(>30000*30000) and exceed the storage limit in R software.
 
 decomp <- function(mat, orders){
+  mat <- (mat+t(mat))/2
   decomp <- eigen(mat)$vectors %*% diag((eigen(mat)$values)^(orders)) %*% t(eigen(mat)$vectors)
   return(decomp)
 }
@@ -78,6 +79,4 @@ pfcge.exc <- function(x, fy, gamma1, beta1, omegahat, Mhat, tol){
               omegahat=omegahat, Mhat=Mhat,loglikelihood=-(n*pL*pR/2*log(2*pi) + n*pL/2*log(det(omegahat)) + n*pR/2*log(det(Mhat)) + 1/2*L1), X11=X11)
   return(est)
 }
-
-
 

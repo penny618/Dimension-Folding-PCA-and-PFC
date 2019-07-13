@@ -1,13 +1,14 @@
 library(MASS)
 library(compiler)
 set.seed(2019)
-source('C:/Users/Penny/Desktop/PFC/code/generate_data.R')
+source('C:/Users/Penny/Desktop/PFC/code/R/generate_data.R')
 
 pL  <- pR <- 3
 dL  <- dR <- 2
 rR  <- rL <- 4
 n   <- 50
 tol <- 1e-10
+
 omega <- matrix(c(0.50,-0.25,0,-0.25,0.5,-0.25,0,-0.25,0.5), 3, 3)
 M <- matrix(c(0.886,0.266,0.062,0.266,0.248,0.048,0.062,0.048,0.015), 3, 3)
 
@@ -28,8 +29,8 @@ omegahat <- diag(abs(rnorm(pR)))
 Mhat <- diag(abs(rnorm(pL)))
 
 # dimension folding-------------------------------------------------------------------------------------------
-source('C:/Users/Penny/Desktop/code/pfc_ge.R')
-source('C:/Users/Penny/Desktop/code/pfcge_exc.R')
+source('C:/Users/Penny/Desktop/code/R/pfc_ge.R')
+source('C:/Users/Penny/Desktop/code/R/pfcge_exc.R')
 
 n > max(pL/pR, pR/pL) - 1  # if true then Mhat and omegahat is invertible
 
