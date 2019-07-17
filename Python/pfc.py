@@ -31,19 +31,18 @@ def decomp(mat, orders):
     dec = np.dot(np.dot(mat_vec, np.identity(len(mat_val))*(mat_val**orders)), mat_vec.T)
     return dec
 
-decomp(a,-1)
 # In[]
 
 # In[]  read images
-n=40
+nk=40
 array_of_img = []
 for i in ["glass/glass","paper/paper","metal/metal"]:
-    for j in (np.arange(n)+1):
+    for j in (np.arange(nk)+1):
         img = mpimg.imread(i + str(j) + ".jpg")
         img_grey = np.dot(img[...,:3], [0.299, 0.587, 0.114])  # convert rgb to grey
         array_of_img.append(img_grey)
 
-array_of_img[0].shape
+n = len(array_of_img)
 #plt.imshow(img)
 
 # In[]
@@ -56,7 +55,7 @@ tol = 1e-4
 n*pL*pR
 # In[] compute covx
 covx = 0
-for i in (np.arange(n)+1):
+for i in np.arange(n):
     covx += array_of_img[i].T.dot(array_of_img[i])
 
 gamma1 = np.linalg.eig(covx)[1][:,:dR]  # generate gamma1
@@ -66,17 +65,66 @@ Mhat = np.identity(pL)*[np.abs(r.random()) for i in np.arange(pL)]  # generate M
 # In[]
 x = array_of_img
 # standardizes the predictors
-z = [decomp(Mhat,-1/2).dot(x[i]).dot(decomp(omeghat,-1/2)) for i in (np.arange(n)+1)]
+z = [decomp(Mhat,-1/2).dot(x[i]).dot(decomp(omeghat,-1/2)) for i in np.arange(n)]
 
-# In[]  update gamma2 and beta2
-gamma1z = decomp(omeghat,-1/2).dot(gamma1)
+y = nk - nk/n
+fy = [np.eye(2)*[y,y**2] for i in np.arange(n)]
 # In[]
-XL = []
-for i in (np.arange(n)):
-    XL[((i-1)*dR+1) : (i*dR+1)] = (z[i].dot(gamma1z)).T
+XL = np.zeros((n*dR,pL))
+FL = np.zeros((n*dR,rL))
+XR = np.zeros((n*dL,pR))
+FR = np.zeros((n*dL,rR))
 
-#  XL[((i-1)*dR+1) : (i*dR),] <- t(z[,,i] %*% gamma1z)
-#      FL[((i-1)*dR+1) : (i*dR),] <- t(fy[,,i] %*% t(beta1))
+# In[]  update gamma2 and beta2  TODO
+gamma1z = decomp(omeghat,-1/2).dot(gamma1)
+delta = 1e3
+for i in (np.arange(n)+1):
+    XL[((i-1)*dR) : (i*dR),:] = (z[i-1].dot(gamma1z)).T
+    FL[((i-1)*dR) : (i*dR),:] = (fy[i-1].dot(beta1.T)).T
+
+sigmaL = XL.T.dot(FL).dot(np.mat(FL.T.dot(FL)).I).dot(FL.T).dot(XL)/n
+gamma2z = np.linalg.eig(sigmaL+np.eye(pL)*delta)[1][:,:dL]  # gamma2z有复数________________________________
+gamma2 = decomp(Mhat,1/2).dot(gamma2z)
+beta2 = gamma2z.T.dot(XL.T).dot(FL).dot(np.mat(FL.T.dot(FL)).I)
+# In[] update gamma1 and beta1 TODO
+for i in (np.arange(n)+1):
+    XR[((i-1)*dL) : (i*dL),:] = (z[i-1].T.dot(gamma2z)).T
+    FR[((i-1)*dL) : (i*dL),:] = beta2.dot(fy[i-1])
+
+# In[]
+sigmaL = XL.T.dot(FL).dot(np.mat(FL.T.dot(FL)).I).dot(FL.T).dot(XL)/n
+gamma2z = np.linalg.eig(sigmaL)[1][:,:dL]
+gamma2 = decomp(Mhat,1/2).dot(gamma2z)
+beta2 = gamma2z.T.dot(XL.T).dot(FL).dot(np.mat(FL.T.dot(FL)).I)
+
+# In[]
+
+# In[]
+    # update gamma1 and beta1
+    for(i in 1:n){
+      XR[((i-1)*dL+1) : (i*dL),] <- t(t(z[,,i]) %*% gamma2z)
+      FR[((i-1)*dL+1) : (i*dL),] <- beta2 %*% fy[,,i]
+    }
+    sigmaR  <- t(XR) %*% FR%*%solve(t(FR)%*%FR)%*%t(FR) %*% XR/n
+    gamma1z <- eigen(sigmaR)$vectors[,1:dR]
+    gamma1 <- decomp(omegahat,1/2) %*% gamma1z
+    beta1  <- t(gamma1z) %*% t(XR) %*% FR %*% solve(t(FR)%*%FR)
+    
+    xbar <- apply(x, c(1,2), mean)
+    
+    # update omegahat
+    for(i in 1:n){
+      delta <- t(x[,,i]-xbar-gamma2 %*% beta2 %*% fy[,,i] %*% t(beta1) %*% t(gamma1)) %*% solve(Mhat) %*% (x[,,i]-xbar-gamma2 %*% beta2 %*% fy[,,i] %*% t(beta1) %*% t(gamma1))
+      omegahat <- omegahat + delta
+    }
+    omegahat <- omegahat/(n*pL)
+    
+    # update Mhat
+    for(i in 1:n){
+      delta <- (x[,,i]-xbar-gamma2 %*% beta2 %*% fy[,,i] %*% t(beta1) %*% t(gamma1)) %*% solve(omegahat) %*% t(x[,,i]-xbar-gamma2 %*% beta2 %*% fy[,,i] %*% t(beta1) %*% t(gamma1))
+      Mhat <- Mhat + delta
+    }
+    Mhat <- Mhat/(n*pR)
 # In[]
 # =============================================================================
 # img1 = cv2.imread(filenames,cv2.IMREAD_GRAYSCALE)   #读取图片，第二个参数表示以灰度图像读入
