@@ -34,7 +34,7 @@ def decomp(mat, orders):
 # In[]
 
 # In[]  read images
-nk=40
+nk=10
 array_of_img = []
 for i in ["glass/glass","paper/paper","metal/metal"]:
     for j in (np.arange(nk)+1):
@@ -77,20 +77,23 @@ XR = np.zeros((n*dL,pR))
 FR = np.zeros((n*dL,rR))
 L1 = 100
 L0 = 0
+
 while np.abs(L1-L0) > tol:
+    delta = 9
     L0 = L1
+    
     # standardizes the predictors
     z = [decomp(Mhat,-1/2).dot(x[i]).dot(decomp(omegahat,-1/2)) for i in np.arange(n)]
     
     # update gamma2 and beta2
     gamma1z = decomp(omegahat,-1/2).dot(gamma1)
-    delta = 1e3
     for i in (np.arange(n)+1):
         XL[((i-1)*dR) : (i*dR),:] = (z[i-1].dot(gamma1z)).T
         FL[((i-1)*dR) : (i*dR),:] = (fy[i-1].dot(beta1.T)).T
 
-    sigmaL = XL.T.dot(FL).dot(np.mat(FL.T.dot(FL)).I).dot(FL.T).dot(XL)/n
+    sigmaL = (XL.T.dot(FL)).dot(np.mat(FL.T.dot(FL)).I).dot(FL.T).dot(XL)/n
     gamma2z = (np.linalg.eig(sigmaL+np.eye(pL)*delta)[1][:,:dL]).real
+    #gamma2z = (np.linalg.eig(sigmaL)[1][:,:dL]).real
     gamma2 = decomp(Mhat,1/2).dot(gamma2z)
     beta2 = gamma2z.T.dot(XL.T).dot(FL).dot(np.mat(FL.T.dot(FL)).I)
     
@@ -98,8 +101,9 @@ while np.abs(L1-L0) > tol:
     for i in (np.arange(n)+1):
         XR[((i-1)*dL) : (i*dL),:] = (z[i-1].T.dot(gamma2z)).T
         FR[((i-1)*dL) : (i*dL),:] = beta2.dot(fy[i-1])
-    sigmaR = XR.T.dot(FR).dot(np.mat(FL.T.dot(FL)).I).dot(FR.T).dot(XR)/n
+    sigmaR = (XR.T.dot(FR)).dot(np.mat(FR.T.dot(FR)).I).dot(FR.T).dot(XR)/n
     gamma1z = (np.linalg.eig(sigmaR+np.eye(pR)*delta)[1][:,:dR]).real
+    #gamma1z = (np.linalg.eig(sigmaR)[1][:,:dR]).real
     gamma1 = decomp(omegahat,1/2).dot(gamma1z)
     beta1 = gamma1z.T.dot(XR.T).dot(FR).dot(np.mat(FR.T.dot(FR)).I)
 
@@ -117,7 +121,7 @@ while np.abs(L1-L0) > tol:
         delta = (x[i-1] - xbar).reshape(pL,pR) - gamma2.dot(beta2).dot(fy[i-1]).dot(beta1.T).dot(gamma1.T)
         temp = delta.dot(np.mat(omegahat).I).dot(delta.T)
         Mhat += temp 
-    omegahat = omegahat/(n*pR)
+    Mhat = Mhat/(n*pR)
     
     # update log likelihood function
     l = 0
